@@ -1,0 +1,35 @@
+# Prefixes
+
+PREFIX wd: <https://catalog.digital-scriptorium.org/entity/>
+PREFIX wds: <https://catalog.digital-scriptorium.org/entity/statement/>
+PREFIX wdv: <https://catalog.digital-scriptorium.org/value/>
+PREFIX wdt: <https://catalog.digital-scriptorium.org/prop/direct/>
+PREFIX p: <https://catalog.digital-scriptorium.org/prop/>
+PREFIX ps: <https://catalog.digital-scriptorium.org/prop/statement/>
+PREFIX pq: <https://catalog.digital-scriptorium.org/prop/qualifier/>
+
+PREFIX schema: <http://schema.org/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+# find manuscript records outside of date range
+SELECT ?record ?recordLabel ?yearEarlyDate ?yearLateDate ?DSID
+WHERE {
+# bind query variables
+  BIND(p:P23 AS ?productionDateAsRecorded).
+  BIND(pq:P37 AS ?hasEarliestDate).
+  BIND(pq:P36 AS ?hasLatestDate).
+  BIND(year(?earlyDate) AS ?yearEarlyDate).
+  BIND(year(?lateDate) AS ?yearLateDate).
+# statement: manuscript record has manuscript has production date recorded as literal string value
+  ?record ?productionDateAsRecorded ?productionDateString .
+# statement: string value has qualifier values for earliest and latest dates
+  ?productionDateString ?hasEarliestDate ?earlyDate .
+  ?productionDateString ?hasLatestDate ?lateDate .
+  
+  FILTER (YEAR(?earlyDate) > 800 || YEAR(?lateDate) < 1970 ) .
+ 
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]".
+                      }
+  }
+  ORDER BY ?yearEarlyDate
